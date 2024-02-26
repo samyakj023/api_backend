@@ -10,10 +10,10 @@ app.use(express.json());
 
 // Connecting to the database
 const pool = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    password: 'samyak',
-    database: "try",
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DB_NAME,
     port:process.env.DATA_PORT,
     Promise: require('bluebird') // Specify Promise library for mysql2
 });
