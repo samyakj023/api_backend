@@ -109,11 +109,11 @@ app.get('/api/userrank/:userId', async (req, res) => {
         
         // Fetch user rank query
         const userRankResult = await pool.promise().query(`
-            SELECT COUNT(*) AS rank
-            FROM leaderboard
-            WHERE Score > (SELECT MAX(Score) FROM leaderboard WHERE UID = ?)
-        `, [userId]);
-        
+    SELECT COUNT(*) AS \`rank\`
+    FROM leaderboard
+    WHERE Score > (SELECT MAX(Score) FROM leaderboard WHERE UID = ?)
+`, [userId]);
+
         if (userRankResult[0].length === 0) {
             res.status(404).json({ message: "User not found" });
         } else {
