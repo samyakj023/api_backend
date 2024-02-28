@@ -111,12 +111,20 @@ app.get('/api/lastweek/:country', async (req, res) => {
             ORDER BY Score DESC 
             LIMIT 200
         `, [country]);
+
+        if (data[0].length === 0) {
+            // If the returned data array is empty, return a 404 status code
+            return res.status(404).json({ message: "No data found for the given country code" });
+        }
+
         res.status(200).json(data[0]);
     } catch (err) {
         console.error("Error:", err);
         res.status(500).json({ message: err });
     }
 });
+
+
 
 
 app.get('/api/userrank/:userId', async (req, res) => {
@@ -127,6 +135,18 @@ app.get('/api/userrank/:userId', async (req, res) => {
             return res.status(400).json({ message: "User ID is required" });
         }
         
+        // Check if the user exists
+        const userExistsResult = await pool.promise().query(`
+            SELECT COUNT(*) AS userCount
+            FROM leaderboard
+            WHERE UID = ?
+        `, [userId]);
+
+        // If no user with the provided ID exists, return a 404 response
+        if (userExistsResult[0][0].userCount === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
         // Fetch user rank query
         const userRankResult = await pool.promise().query(`
             SELECT COUNT(*) AS \`rank\`
@@ -134,18 +154,14 @@ app.get('/api/userrank/:userId', async (req, res) => {
             WHERE Score > (SELECT MAX(Score) FROM leaderboard WHERE UID = ?)
         `, [userId]);
 
-        if (userRankResult[0].length === 0) {
-            // If no rows are returned, it means the user ID is not found
-            res.status(404).json({ message: "User not found" });
-        } else {
-            const userRank = userRankResult[0][0].rank + 1; // Add 1 to rank to start from 1 instead of 0
-            res.status(200).json({ userId: userId, rank: userRank });
-        }
+        const userRank = userRankResult[0][0].rank + 1; // Add 1 to rank to start from 1 instead of 0
+        res.status(200).json({ userId: userId, rank: userRank });
     } catch (err) {
         console.error("Error:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
 
 
 
