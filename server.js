@@ -129,12 +129,13 @@ app.get('/api/userrank/:userId', async (req, res) => {
         
         // Fetch user rank query
         const userRankResult = await pool.promise().query(`
-    SELECT COUNT(*) AS \`rank\`
-    FROM leaderboard
-    WHERE Score > (SELECT MAX(Score) FROM leaderboard WHERE UID = ?)
-`, [userId]);
+            SELECT COUNT(*) AS \`rank\`
+            FROM leaderboard
+            WHERE Score > (SELECT MAX(Score) FROM leaderboard WHERE UID = ?)
+        `, [userId]);
 
         if (userRankResult[0].length === 0) {
+            // If no rows are returned, it means the user ID is not found
             res.status(404).json({ message: "User not found" });
         } else {
             const userRank = userRankResult[0][0].rank + 1; // Add 1 to rank to start from 1 instead of 0
@@ -142,10 +143,9 @@ app.get('/api/userrank/:userId', async (req, res) => {
         }
     } catch (err) {
         console.error("Error:", err);
-        res.status(500).json({ message: err });
+        res.status(500).json({ message: "Internal server error" });
     }
 });
-
 
 
 
