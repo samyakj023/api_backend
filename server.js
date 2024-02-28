@@ -100,7 +100,7 @@ The "Z" indicates that the time is in UTC (Coordinated Universal Time) timezone.
 app.get('/api/lastweek/:country', async (req, res) => {
     try {
         const { country } = req.params; // Retrieve the country parameter from the request
-        const data = await pool.promise().query(`
+        const [data] = await pool.promise().query(`
             SELECT UID, Name, Score, Country, TimeStamp
             FROM leaderboard 
             WHERE Country = ? 
@@ -109,12 +109,12 @@ app.get('/api/lastweek/:country', async (req, res) => {
             LIMIT 200
         `, [country]);
 
-        if (data[0].length === 0) {
+        if (!data || data.length === 0) {
             // If the returned data array is empty, return a 404 status code
             return res.status(404).json({ message: "No data found for the given country code" });
         }
 
-        res.status(200).json(data[0]);
+        res.status(200).json(data);
     } catch (err) {
         console.error("Error:", err);
         res.status(500).json({ message: err });
